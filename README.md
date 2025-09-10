@@ -1,0 +1,3 @@
+This is an Ai tutor for your language practicing.
+
+The webapp will be a conversation situation that will have a chat with you in any foreign language. For now I want to create a Korean language conversation chat with ai. The ui/ux would be as simple as possible. Then after you have a chat (for now only using keyboard, later will include voice), the webapp will output an alternative words that are better to use in the scenario. Then rate the user response to how similar to the natives. 

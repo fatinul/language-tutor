@@ -1,50 +1,57 @@
-import { useState, useEffect } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import axios from 'axios'
+import { useState } from 'react';
+import axios from 'axios';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [message, setMessage] = useState('');
+  const [chatHistory, setChatHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const fetchData = async () => {
+  const sendMessage = async () => {
+    if (!message.trim()) return;
+
+    const userMessage = { role: 'user', content: message };
+    setChatHistory(prev => [...prev, userMessage]);
+    setMessage('');
+    setLoading(true);
+
     try {
-      const response = await axios.get('http://localhost:3000/api/');
-      console.log('Data from server:', response.data);
+      const response = await axios.post('http://localhost:5000/api/chat', { message });
+      const botMessage = { role: 'bot', content: response.data.message };
+      setChatHistory(prev => [...prev, botMessage]);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error sending message:', error);
+      const errorMessage = { role: 'bot', content: 'Sorry, something went wrong.' };
+      setChatHistory(prev => [...prev, errorMessage]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Fetch data when the component mounts
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="app-container">
+      <div className="chat-history">
+        {chatHistory.map((msg, index) => (
+          <div key={index} className={`message ${msg.role}`}>
+            {msg.content}
+          </div>
+        ))}
+        {loading && <div className="message bot">Thinking...</div>}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+      <div className="chat-input">
+        <input
+          type="text"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+          placeholder="Type your message..."
+        />
+        <button onClick={sendMessage} disabled={loading}>
+          Send
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
